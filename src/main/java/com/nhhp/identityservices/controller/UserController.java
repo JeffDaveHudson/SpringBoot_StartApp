@@ -7,6 +7,9 @@ import com.nhhp.identityservices.dto.response.UserResponse;
 import com.nhhp.identityservices.entity.User;
 import com.nhhp.identityservices.service.UserService;
 import jakarta.validation.Valid;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,10 +21,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/users")
 @Slf4j
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@RequiredArgsConstructor
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+//    @Autowired
+    UserService userService;
 
     @PostMapping
 //  @RequestBody: map data của request vào object
