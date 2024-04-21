@@ -58,7 +58,7 @@ public class UserService {
         // tao Role
         HashSet<String> roles = new HashSet<>();
         roles.add(Role.USER.name());
-        user.setRoles(roles);
+//--        user.setRoles(roles);
 
         return userRepository.save(user);
     }
