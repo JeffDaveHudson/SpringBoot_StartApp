@@ -8,6 +8,7 @@ import com.nhhp.identityservices.enums.Role;
 import com.nhhp.identityservices.exception.AppException;
 import com.nhhp.identityservices.exception.ErrorCode;
 import com.nhhp.identityservices.mapper.UserMapper;
+import com.nhhp.identityservices.repository.RoleRepository;
 import com.nhhp.identityservices.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,8 @@ public class UserService {
     UserMapper userMapper;
 
     PasswordEncoder passwordEncoder;
+
+    RoleRepository roleRepository;
 
     public User createUser(UserCreationRequest request){
 
@@ -82,14 +85,24 @@ public class UserService {
     }
 
     public UserResponse updateUser(String userId, UserUpdateRequest request) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-
+        User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        System.out.println("user: "+user.getId()+" - "+user.getUsername()
+                +" - "+user.getPassword()+" - "+user.getLastName()
+                +" - "+user.getFirstName()+" - "+user.getRoles());
+        System.out.println("role: "+request.getRoles());
 //        user.setPassword(request.getPassword());
 //        user.setFirstName(request.getFirstName());
 //        user.setLastName(request.getLastName());
 //        user.setDob(request.getDob());
 
         userMapper.updateUser(user, request);
+        System.out.println("-----------------1");
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        System.out.println("-----------------2");
+        var roles = roleRepository.findAllById(request.getRoles());
+        System.out.println("-----------------3");
+        user.setRoles(new HashSet<>(roles));
+        System.out.println("-----------------4");
         return userMapper.toUserResponse(userRepository.save(user));
     }
 
