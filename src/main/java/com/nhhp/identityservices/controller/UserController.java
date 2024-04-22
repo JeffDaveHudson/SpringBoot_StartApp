@@ -25,7 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
 
-//    @Autowired
+    @Autowired
     UserService userService;
 
     @PostMapping
@@ -77,9 +77,17 @@ public class UserController {
     }
 
     @PutMapping("/{userId}")
-    public UserResponse updateUser(@PathVariable("userId") String userId,
-                           @RequestBody UserUpdateRequest request){
-        return userService.updateUser(userId, request);
+    public ApiResponse<UserResponse> updateUser(@PathVariable("userId") String userId,
+                                                @RequestBody UserUpdateRequest request){
+        System.out.println("controller: "
+                +"\n + "+request.getRoles()
+                +"\n + "+request.getPassword()
+                +"\n + "+request.getFirstName()
+                +"\n + "+request.getLastName());
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.updateUser(userId, request))
+                .build();
+//        return userService.updateUser(userId, request);
     }
 
     @DeleteMapping("/{userId}")
