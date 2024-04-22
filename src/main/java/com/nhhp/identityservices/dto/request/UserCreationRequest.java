@@ -1,6 +1,7 @@
 package com.nhhp.identityservices.dto.request;
 
 import com.nhhp.identityservices.exception.ErrorCode;
+import com.nhhp.identityservices.validator.DobConstraint;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -20,6 +21,9 @@ public class UserCreationRequest {
     String password;
     String lastName;
     String firstName;
+
+    // vi min trong DobConstraint khong co gia tri mac dinh nen ta can khai bao gia tri o day
+    @DobConstraint(min = 2, message = "INVALID_DATE_OF_BIRTH")
     LocalDate dob;
 //    Set<String> roles;
 }

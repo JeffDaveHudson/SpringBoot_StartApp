@@ -1,5 +1,7 @@
 package com.nhhp.identityservices.entity;
 
+import com.nhhp.identityservices.exception.ErrorCode;
+import com.nhhp.identityservices.validator.DobConstraint;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -22,6 +24,8 @@ public class User {
     String password;
     String lastName;
     String firstName;
+
+
     LocalDate dob;
 
     @ManyToMany
