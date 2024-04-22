@@ -18,7 +18,7 @@ public enum ErrorCode {
     PASSWORD_INVALID(1004, "Password must be at least 4 characters", HttpStatus.INTERNAL_SERVER_ERROR),
     UNAUTHENTICATED(1007, "Unauthenticated", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED(1008, "You do not have permission", HttpStatus.FORBIDDEN),
-    INVALID_DATE_OF_BIRTH(1009, "Age must be larger than 2", HttpStatus.FORBIDDEN),
+    INVALID_DATE_OF_BIRTH(1009, "Age must be larger than {min}", HttpStatus.FORBIDDEN),
     UNCATEGORIZED_EXCEPTION(9999, "Uncategorized exception", HttpStatus.INTERNAL_SERVER_ERROR)
     ;
 

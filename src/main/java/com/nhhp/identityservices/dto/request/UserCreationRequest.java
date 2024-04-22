@@ -23,7 +23,7 @@ public class UserCreationRequest {
     String firstName;
 
     // vi min trong DobConstraint khong co gia tri mac dinh nen ta can khai bao gia tri o day
-    @DobConstraint(min = 2, message = "INVALID_DATE_OF_BIRTH")
+    @DobConstraint(min = 4, message = "INVALID_DATE_OF_BIRTH")
     LocalDate dob;
 //    Set<String> roles;
 }
