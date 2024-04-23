@@ -1,6 +1,7 @@
 package com.nhhp.identityservices.configuration;
 
 import com.nhhp.identityservices.enums.Role;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,8 +26,12 @@ import javax.crypto.spec.SecretKeySpec;
 @EnableMethodSecurity //enable kha nang kiem tra role cua 1 user truoc khi truy cap 1 method trong service. O tren method, ta se su dung @PreAuthorize hoac @PostAuthorize
 public class SecurityConfig {
 
-    @Value("${jwt.signerKey}")
-    private String signerKey;
+    // // tao CustomJwtDecoder class da bao gom 2 dong duoi
+//    @Value("${jwt.signerKey}")
+//    private String signerKey;
+
+    @Autowired
+    private CustomJwtDecoder customJwtDecoder;
 
     // cau hinh xem domain nao duoc nguoi dung voi vai tro tuong ung su dung
     // vd: chi admin moi vao duoc domain voi chuc nang delete user,
@@ -36,14 +41,14 @@ public class SecurityConfig {
 
         httpSecurity.authorizeHttpRequests(request ->
                 request.requestMatchers(HttpMethod.POST, "/users").permitAll() // cho phep bat ky nguoi dung nao cung co the truy cap duoc "/users"
-                        .requestMatchers(HttpMethod.POST, "/auth/token", "/auth/introspect").permitAll() // tuong tu nhu tren
+                        .requestMatchers(HttpMethod.POST, "/auth/token", "/auth/introspect", "/auth/logout").permitAll() // tuong tu nhu tren
                         // command line dong duoi vi da dung @@EnableMethodSecurity
                         //.requestMatchers(HttpMethod.GET, "/users").hasRole(Role.ADMIN.name())// chi cho phep role la admin su dung phuong thuc nay
                         .anyRequest().authenticated()); // secure nhung domain con lai (khong cho nguoi bat ky su dung)
 
         //
         httpSecurity.oauth2ResourceServer(oauth2 ->
-                oauth2.jwt(jwtConfigurer -> jwtConfigurer.decoder(jwtDecoder())
+                oauth2.jwt(jwtConfigurer -> jwtConfigurer.decoder(customJwtDecoder)
                                                          .jwtAuthenticationConverter(jwtAuthenticationConverter()))
                         .authenticationEntryPoint(new JwtAuthenticationEntryPoint()) // set up exception cua loi Unauthenicated
 
@@ -55,14 +60,15 @@ public class SecurityConfig {
         return httpSecurity.build();
     }
 
-    @Bean
-    public JwtDecoder jwtDecoder(){
-        SecretKeySpec secretKeySpec = new SecretKeySpec(signerKey.getBytes(), "HS512");
-        return NimbusJwtDecoder
-                .withSecretKey(secretKeySpec)
-                .macAlgorithm(MacAlgorithm.HS512)
-                .build();
-    }
+    // tao CustomJwtDecoder class de su dung thay cho ham nay
+//    @Bean
+//    public JwtDecoder jwtDecoder(){
+//        SecretKeySpec secretKeySpec = new SecretKeySpec(signerKey.getBytes(), "HS512");
+//        return NimbusJwtDecoder
+//                .withSecretKey(secretKeySpec)
+//                .macAlgorithm(MacAlgorithm.HS512)
+//                .build();
+//    }
 
     // custome lai prefix
     // vd: neu khong custome  se in ra SCOPE_ADMIN
