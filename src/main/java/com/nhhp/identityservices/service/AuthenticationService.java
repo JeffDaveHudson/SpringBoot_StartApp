@@ -2,11 +2,14 @@ package com.nhhp.identityservices.service;
 
 import com.nhhp.identityservices.dto.request.AuthenticationRequest;
 import com.nhhp.identityservices.dto.request.IntrospectRequest;
+import com.nhhp.identityservices.dto.request.LogoutRequest;
 import com.nhhp.identityservices.dto.response.AuthenticationResponse;
 import com.nhhp.identityservices.dto.response.IntrospectResponse;
+import com.nhhp.identityservices.entity.InvalidatedToken;
 import com.nhhp.identityservices.entity.User;
 import com.nhhp.identityservices.exception.AppException;
 import com.nhhp.identityservices.exception.ErrorCode;
+import com.nhhp.identityservices.repository.InvalidatedTokenRepository;
 import com.nhhp.identityservices.repository.UserRepository;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
@@ -28,12 +31,15 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.StringJoiner;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor // inject vao constructor voi nhung field Final
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthenticationService {
     UserRepository userRepository;
+
+    InvalidatedTokenRepository invalidatedTokenRepository;
 
     // key nay de sign va giai ma trong jwt
     @NonFinal // dung de tranh inject vao constructor khi dung @RequiredArgsConstructor
@@ -57,21 +63,17 @@ public class AuthenticationService {
 
     public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException {
         var token = request.getToken();
+        boolean isValid = true;
 
-        // Giai ma token, (ma hoa bang thuat toan nao thi giai ma bang thuat toan day)
-        JWSVerifier jwsVerifier = new MACVerifier(SIGNER_KEY.getBytes());
-
-        SignedJWT signedJWT = SignedJWT.parse(token);
-
-        // kiem tra xem token con han khong
-        Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-        var isExpiryTime= expiryTime.after(new Date());
-
-        // tien hanh verify
-        var verified = signedJWT.verify(jwsVerifier);
+        try {
+            verifyToken(token);
+        }
+        catch (AppException e){
+            isValid = false;
+        }
 
         return IntrospectResponse.builder()
-                .valid(verified && isExpiryTime)
+                .valid(isValid)
                 .build();
     }
 
@@ -89,6 +91,7 @@ public class AuthenticationService {
                 .expirationTime(new Date(
                         Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()
                 )) // xac dinh thoi han ton tai cua token
+                .jwtID(UUID.randomUUID().toString())
                 .claim("scope", buildScopeRole(user))
                 .build();
 
@@ -123,5 +126,43 @@ public class AuthenticationService {
            });
 
         return stringJoiner.toString();
+    }
+
+    private SignedJWT verifyToken(String token) throws JOSEException, ParseException {
+        // Giai ma token, (ma hoa bang thuat toan nao thi giai ma bang thuat toan day)
+        JWSVerifier jwsVerifier = new MACVerifier(SIGNER_KEY.getBytes());
+
+        SignedJWT signedJWT = SignedJWT.parse(token);
+
+        // kiem tra xem token con han khong
+        Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+        var isExpiryTime= expiryTime.after(new Date());
+
+        // tien hanh verify
+        var verified = signedJWT.verify(jwsVerifier);
+
+        if(!(verified & isExpiryTime))
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+
+        if(invalidatedTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID()))
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+
+        return signedJWT;
+    }
+
+    public void logout(LogoutRequest request) throws ParseException, JOSEException {
+        var signToken = verifyToken(request.getToken());
+
+        // jit = jwtTokenId
+        String jit = signToken.getJWTClaimsSet().getJWTID();
+        Date expiryTime = signToken.getJWTClaimsSet().getExpirationTime();
+
+        InvalidatedToken invalidatedToken = InvalidatedToken
+                .builder()
+                .id(jit)
+                .expiryTime(expiryTime)
+                .build();
+
+        invalidatedTokenRepository.save(invalidatedToken);
     }
 }

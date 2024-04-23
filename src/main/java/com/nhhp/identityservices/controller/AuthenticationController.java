@@ -3,6 +3,7 @@ package com.nhhp.identityservices.controller;
 import com.nhhp.identityservices.dto.request.ApiResponse;
 import com.nhhp.identityservices.dto.request.AuthenticationRequest;
 import com.nhhp.identityservices.dto.request.IntrospectRequest;
+import com.nhhp.identityservices.dto.request.LogoutRequest;
 import com.nhhp.identityservices.dto.response.AuthenticationResponse;
 import com.nhhp.identityservices.dto.response.IntrospectResponse;
 import com.nhhp.identityservices.service.AuthenticationService;
@@ -37,6 +38,13 @@ public class AuthenticationController {
         var result = authenticationService.introspect(request);
         return ApiResponse.<IntrospectResponse>builder()
                 .result(result)
+                .build();
+    }
+
+    @PostMapping("/logout")
+    ApiResponse<Void> logout(@RequestBody LogoutRequest request) throws ParseException, JOSEException {
+        authenticationService.logout(request);
+        return ApiResponse.<Void>builder()
                 .build();
     }
 }
