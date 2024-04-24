@@ -3,6 +3,7 @@ package com.nhhp.identityservices.service;
 import com.nhhp.identityservices.dto.request.AuthenticationRequest;
 import com.nhhp.identityservices.dto.request.IntrospectRequest;
 import com.nhhp.identityservices.dto.request.LogoutRequest;
+import com.nhhp.identityservices.dto.request.RefreshRequest;
 import com.nhhp.identityservices.dto.response.AuthenticationResponse;
 import com.nhhp.identityservices.dto.response.IntrospectResponse;
 import com.nhhp.identityservices.entity.InvalidatedToken;
@@ -59,6 +60,8 @@ public class AuthenticationService {
                 .token(token)
                 .authenticated(true)
                 .build();
+
+
     }
 
     public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException {
@@ -164,5 +167,31 @@ public class AuthenticationService {
                 .build();
 
         invalidatedTokenRepository.save(invalidatedToken);
+    }
+
+    public AuthenticationResponse refreshToken(RefreshRequest request) throws ParseException, JOSEException {
+        // kiem tra hieu luc cua token
+        var signedJWT = verifyToken(request.getToken());
+
+        var jit = signedJWT.getJWTClaimsSet().getJWTID();
+        var expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+
+        InvalidatedToken invalidatedToken = InvalidatedToken
+                .builder()
+                .id(jit)
+                .expiryTime(expiryTime)
+                .build();
+
+        invalidatedTokenRepository.save(invalidatedToken);
+
+        var username = signedJWT.getJWTClaimsSet().getSubject();
+        var user = userRepository.findByUsername(username).orElseThrow(
+                () ->  new AppException(ErrorCode.UNAUTHENTICATED) );
+
+        var token = generateToken(user);
+        return AuthenticationResponse.builder()
+                .token(token)
+                .authenticated(true)
+                .build();
     }
 }

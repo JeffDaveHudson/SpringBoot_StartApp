@@ -41,7 +41,7 @@ public class SecurityConfig {
 
         httpSecurity.authorizeHttpRequests(request ->
                 request.requestMatchers(HttpMethod.POST, "/users").permitAll() // cho phep bat ky nguoi dung nao cung co the truy cap duoc "/users"
-                        .requestMatchers(HttpMethod.POST, "/auth/token", "/auth/introspect", "/auth/logout").permitAll() // tuong tu nhu tren
+                        .requestMatchers(HttpMethod.POST, "/auth/token", "/auth/introspect", "/auth/logout", "/auth/refresh").permitAll() // tuong tu nhu tren
                         // command line dong duoi vi da dung @@EnableMethodSecurity
                         //.requestMatchers(HttpMethod.GET, "/users").hasRole(Role.ADMIN.name())// chi cho phep role la admin su dung phuong thuc nay
                         .anyRequest().authenticated()); // secure nhung domain con lai (khong cho nguoi bat ky su dung)
