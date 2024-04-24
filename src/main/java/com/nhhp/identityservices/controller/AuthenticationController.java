@@ -1,9 +1,6 @@
 package com.nhhp.identityservices.controller;
 
-import com.nhhp.identityservices.dto.request.ApiResponse;
-import com.nhhp.identityservices.dto.request.AuthenticationRequest;
-import com.nhhp.identityservices.dto.request.IntrospectRequest;
-import com.nhhp.identityservices.dto.request.LogoutRequest;
+import com.nhhp.identityservices.dto.request.*;
 import com.nhhp.identityservices.dto.response.AuthenticationResponse;
 import com.nhhp.identityservices.dto.response.IntrospectResponse;
 import com.nhhp.identityservices.service.AuthenticationService;
@@ -45,6 +42,14 @@ public class AuthenticationController {
     ApiResponse<Void> logout(@RequestBody LogoutRequest request) throws ParseException, JOSEException {
         authenticationService.logout(request);
         return ApiResponse.<Void>builder()
+                .build();
+    }
+
+    @PostMapping("/refresh")
+    ApiResponse<AuthenticationResponse> authenticate(@RequestBody RefreshRequest request) throws ParseException, JOSEException {
+        var result = authenticationService.refreshToken(request);
+        return ApiResponse.<AuthenticationResponse>builder()
+                .result(result)
                 .build();
     }
 }
