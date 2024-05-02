@@ -39,7 +39,9 @@ public class UserService {
 
     RoleRepository roleRepository;
 
-    public User createUser(UserCreationRequest request){
+    public UserResponse createUser(UserCreationRequest request){
+
+        log.info("UserService");
 
         if(userRepository.existsByUsername(request.getUsername())) {
 //            throw new RuntimeException("User existed");
@@ -63,7 +65,7 @@ public class UserService {
         roles.add(Role.USER.name());
 //--        user.setRoles(roles);
 
-        return userRepository.save(user);
+        return userMapper.toUserResponse(userRepository.save(user));
     }
 
 //    public List<User> getUsers(){

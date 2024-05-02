@@ -5,6 +5,7 @@ import com.nhhp.identityservices.dto.request.UserCreationRequest;
 import com.nhhp.identityservices.dto.request.UserUpdateRequest;
 import com.nhhp.identityservices.dto.response.UserResponse;
 import com.nhhp.identityservices.entity.User;
+import com.nhhp.identityservices.mapper.UserMapper;
 import com.nhhp.identityservices.service.UserService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -28,6 +29,9 @@ public class UserController {
     @Autowired
     UserService userService;
 
+    @Autowired
+    UserMapper userMapper;
+
     @PostMapping
 //  @RequestBody: map data của request vào object
 //  đây là dạng chưa chuẩn hóa api
@@ -36,12 +40,11 @@ public class UserController {
 //}
 
     // đây là dạng đã chuẩn hóa api
-    public ApiResponse<User> createUser(@RequestBody @Valid UserCreationRequest request){
-        ApiResponse<User> apiResponse = new ApiResponse<>();
-
-        apiResponse.setResult(userService.createUser(request));
-
-        return apiResponse;
+    public ApiResponse<UserResponse> createUser(@RequestBody @Valid UserCreationRequest request){
+        log.info("Controller: create User");
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.createUser(request))
+                .build();
     }
 
 //    @GetMapping
